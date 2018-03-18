@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+path = File.expand_path("../../app", __FILE__)
+$LOAD_PATH.unshift(path)
+
+path = File.expand_path("../../config", __FILE__)
+$LOAD_PATH.unshift(path)
+
+require 'application'
+
+manager = Addons::Manager.new
+manager.refresh_downloads
+manager.compare_versions
+manager.update_all

@@ -1,0 +1,6 @@
+.ruby-gemset
+log/*
+library/*
+downloads/*
+archive/*
+/*.yml
