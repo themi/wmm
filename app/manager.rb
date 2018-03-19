@@ -44,7 +44,7 @@ module Addons
       # return if !wow_folder? || !update?
 
       if verbose
-        puts "\Updating wow addons:"
+        puts "\nUpdating wow addons:"
         STDOUT.flush
       end
 
@@ -52,16 +52,18 @@ module Addons
         update_addon(download)
       end
 
-      FileUtils.rm_rf("archive")      
     end
 
     def update_addon(item)
+      FileUtils.rm_rf("addon_backup")
+
       item[:addons].each do |addon|
         folder = File.join(wow_addon_location, addon[:name])
         if File.exist?(folder)
-          FileUtils.mv(folder, "archive")
+          FileUtils.mv(folder, "addon_backup")
         end
       end
+
       Addons::Zipper.new(File.join(library_path,item[:file_name])).extract
     end
 
@@ -116,10 +118,10 @@ module Addons
       end
 
       def save_library
+        FileUtils.rm_rf("archive")
         FileUtils.mv(library_path, "archive")
         FileUtils.mv(download_path, library_path)
         File.open(index_file, "w") {|f| f.write({downloads: download_list}.to_yaml) }
-        FileUtils.rm_rf("archive")
       end
 
       def read_wow_folder
