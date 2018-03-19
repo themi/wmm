@@ -1,7 +1,7 @@
 module Addons
   class Manager
     attr_reader :download_list, :wow_folder, :index_file
-    attr_accessor :download_path, :library_path, :verbose, :wow_addon_location
+    attr_accessor :download_path, :library_path, :verbose, :wow_addon_location, :update_list
 
     def initialize(verbose=true)
       @verbose            = verbose
@@ -9,11 +9,12 @@ module Addons
       @library_path       = Addons.config.library_path
       @wow_addon_location = Addons.config.wow_addon_location
       @index_file         = "library.yml"
+      @update_list = nil
     end
 
     def refresh_downloads
       if verbose
-        puts "Updating wow addon downloads:"
+        puts "Downloading listed wow addons:"
         STDOUT.flush
       end
 
@@ -21,7 +22,7 @@ module Addons
 
       @download_list = refresh_library(load_download_list)
 
-      save_library
+      save_download_library
 
       if verbose
         puts "\nReading wow addon folder:"
@@ -37,6 +38,7 @@ module Addons
       end
       wow_folder.each do |addon|
         check_download(addon)
+        update_list.map {|dl| puts "  #{dl[:file_name]}"}
       end
     end
 
@@ -49,6 +51,7 @@ module Addons
       end
 
       update_list.each do |download|
+        puts "  #{download[:file_name]}"
         update_addon(download)
       end
 
@@ -117,7 +120,7 @@ module Addons
         FileUtils.mkdir_p(download_path)
       end
 
-      def save_library
+      def save_download_library
         FileUtils.rm_rf("archive")
         FileUtils.mv(library_path, "archive")
         FileUtils.mv(download_path, library_path)
