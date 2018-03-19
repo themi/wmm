@@ -3,4 +3,5 @@ log/*
 library/*
 downloads/*
 archive/*
+addon_backup/*
 /*.yml
