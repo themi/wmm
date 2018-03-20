@@ -10,5 +10,6 @@ require 'application'
 
 manager = Addons::Manager.new
 manager.refresh_downloads
+manager.read_wow_folder
 manager.compare_versions
 manager.update_all

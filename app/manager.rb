@@ -23,12 +23,15 @@ module Addons
       @download_list = refresh_library(load_download_list)
 
       save_download_library
+    end
 
+    def read_wow_folder
       if verbose
         puts "\nReading wow addon folder:"
         STDOUT.flush
       end
-      @wow_folder = read_wow_folder
+      wow_addons = Addons::Wow.new(wow_addon_location).fetch
+      @wow_folder = wow_addons.flatten
     end
 
     def compare_versions
@@ -43,23 +46,20 @@ module Addons
     end
 
     def update_all
-      # return if !wow_folder? || !update?
-
       if verbose
         puts "\nUpdating wow addons:"
         STDOUT.flush
       end
 
+      FileUtils.rm_rf("addon_backup")
+
       update_list.each do |download|
         puts "  #{download[:file_name]}"
         update_addon(download)
       end
-
     end
 
     def update_addon(item)
-      FileUtils.rm_rf("addon_backup")
-
       item[:addons].each do |addon|
         folder = File.join(wow_addon_location, addon[:name])
         if File.exist?(folder)
@@ -68,18 +68,22 @@ module Addons
       end
 
       Addons::Zipper.new(File.join(library_path,item[:file_name])).extract
-    end
 
+      update_list.each do |download|
+        set_toc_versions(download)
+      end
+    end
 
     # -----
     private
     # -----
-      def wow_folder?
-        !(@wow_folder.nil? || wow_folder.empty?)
-      end
-
-      def update?
-        !(update_list.nil? || update_list.empty?)
+      def set_toc_versions(download)
+        download[:addons].each do |addon|
+          # stream = read
+          # toc = Addons::TOC.new(stream, download[:file_name], download[:project_url])
+          # stream = toc.set_version
+          # write(stream)
+        end
       end
 
       def update_list
@@ -122,14 +126,11 @@ module Addons
 
       def save_download_library
         FileUtils.rm_rf("archive")
+        FileUtils.remove_file("archive.yml", true)
         FileUtils.mv(library_path, "archive")
+        FileUtils.mv(index_file, "archive.yml")
         FileUtils.mv(download_path, library_path)
-        File.open(index_file, "w") {|f| f.write({downloads: download_list}.to_yaml) }
-      end
-
-      def read_wow_folder
-        wow_addons = Addons::Wow.new(wow_addon_location).fetch
-        wow_addons.flatten
+        File.open(index_file, "w") { |f| f.write({ downloads: download_list}.to_yaml) }
       end
 
   end
